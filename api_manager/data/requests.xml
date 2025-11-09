@@ -1,0 +1,65 @@
+<data>
+    <record model="api_manager.request" id="api_request_dotykacka_refresh_token">
+        <field name="name">Refresh Token</field>
+        <field name="provider" ref="api_manager.provider_dotykacka_get_accesstoken"/>
+        <field name="method">POST</field>
+        <field name="url_path">/v2/signin/token</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_create_product">
+        <field name="name">Create Product</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">POST</field>
+        <field name="url_path">/v2/clouds/{cloud_id}/products</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_get_product">
+        <field name="name">Get Product</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">GET</field>
+        <field name="url_path">/v2/clouds/{cloud_id}/products/{product_id}</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_get_products">
+        <field name="name">Get Products</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">GET</field>
+        <field name="url_path">/v2/clouds/{cloud_id}/products{filter}</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_get_orders">
+        <field name="name">Get Orders</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">GET</field>
+        <field name="url_path">/v2/clouds/{cloud_id}/orders</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_write_product">
+        <field name="name">Write Product</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">PATCH</field>
+        <field name="url_path">/v2/clouds/{cloud_id}/products/{product_id}</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_write_products">
+        <field name="name">Write Products</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">PUT</field>
+        <field name="url_path">/v2/clouds/{cloud_id}/products</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_pos_actions">
+        <field name="name">PoS Actions</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">POST</field>
+        <field name="url_path">/v2/clouds/{cloud_id}/branches/{branch_id}/pos-actions</field>
+        <field name="content_type">application/json</field>
+    </record>
+    <record model="api_manager.request" id="api_request_dotykacka_get_employees">
+        <field name="name">Get Employees</field>
+        <field name="provider" ref="api_manager.provider_dotykacka"/>
+        <field name="method">GET</field>
+        <field name="url_path">/v2/clouds/:cloudId/employees</field>
+        <field name="content_type">application/json</field>
+    </record>
+</data>

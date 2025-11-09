@@ -1,0 +1,48 @@
+<data>
+    <record model="ir.ui.view" id="view_api_manager_request_parameter_form">
+        <field name="name">rest.api.request.parameter.form</field>
+        <field name="model">api_manager.request_parameter</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <form string="Request Parameters">
+                <sheet>
+                    <group name="general" string="General">
+                        <field name="provider"/>
+                        <field name="company_id"/>
+                    </group>
+                    <group name="parameter" string="Parameter">
+                        <field name="key"/>
+                        <field name="value"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="view_api_manager_request_parameter_tree">
+        <field name="name">rest.api.request.parameter.tree</field>
+        <field name="model">api_manager.request_parameter</field>
+        <field name="arch" type="xml">
+            <list string="Request Parameters">
+                <field name="provider"/>
+                <field name="key"/>
+                <field name="value"/>
+                <field name="company_id"/>
+            </list>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="view_api_manager_request_parameter_search">
+        <field name="name">rest.api.request.parameter.search</field>
+        <field name="model">api_manager.request_parameter</field>
+        <field name="arch" type="xml">
+            <search string="Request Parameters">
+                <field name="value"/>
+                <filter
+                        name="group_by_value"
+                        string="Key"
+                        domain="[]"
+                        context="{'group_by':'key'}"
+                />
+            </search>
+        </field>
+    </record>
+</data>

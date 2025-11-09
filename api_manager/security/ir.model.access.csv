@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_r_api_provider,api.provider.access.user,model_api_manager_provider,base.group_user,1,0,0,0
+access_r_api_request,api.request.access.user,model_api_manager_request,base.group_user,1,0,0,0
+access_r_api_request_parameter,api.request.parameter.access.user,model_api_manager_request_parameter,base.group_user,1,0,0,0
+access_r_api_logger,api.logger.access.user,model_api_manager_logger,base.group_user,1,0,0,0
+access_rwcu_api_provider,api.provider.access.administrator,model_api_manager_provider,api_manager.group_api_admin,1,1,1,1
+access_rwcu_api_request,api.request.access.administrator,model_api_manager_request,api_manager.group_api_admin,1,1,1,1
+access_rwcu_api_request_parameter,api.request.parameter.access.administrator,model_api_manager_request_parameter,api_manager.group_api_admin,1,1,1,1
+access_rwcu_api_logger,api.logger.access.administrator,model_api_manager_logger,api_manager.group_api_admin,1,1,1,1

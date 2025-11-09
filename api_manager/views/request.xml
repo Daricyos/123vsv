@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_api_manager_request_tree">
+            <field name="name">api_manager.request.tree</field>
+            <field name="model">api_manager.request</field>
+            <field name="arch" type="xml">
+                <list create="true">
+                    <field name="display_name"/>
+                    <field name="provider"/>
+                    <field name="method"/>
+                    <field name="url_path"/>
+                    <field name="parametrized_url"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_api_manager_request_form">
+            <field name="name">api_manager.request.form</field>
+            <field name="model">api_manager.request</field>
+            <field name="arch" type="xml">
+                <form string="Request">
+                    <header>
+                        <button name="send_request" type="object" string="Send Request"/>
+                    </header>
+                    <sheet>
+                        <group string="Request">
+                            <field name="name"/>
+                            <field name="method"/>
+                            <field name="provider"/>
+                        </group>
+                        <group string="URL">
+                            <field name="url_path"/>
+                        </group>
+                        <notebook>
+                            <page name="data" string="Additional Data">
+                                <group name="content">
+                                    <field name="content_type" required="payload != False"/>
+                                    <field name="payload"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_api_manager_request_search">
+            <field name="name">api_manager.request.search</field>
+            <field name="model">api_manager.request</field>
+            <field name="arch" type="xml">
+                <search string="API Requests">
+                    <field name="name"/>
+                    <field name="method"/>
+                    <field name="url_path"/>
+                    <group expand="0" string="Group By...">
+                        <filter
+                                name="group_by_method"
+                                string="Method"
+                                domain="[]"
+                                context="{'group_by':'method'}"
+                        />
+                        <filter
+                                name="group_by_provider"
+                                string="Provider"
+                                domain="[]"
+                                context="{'group_by':'provider'}"
+                        />
+                    </group>
+                </search>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,24 @@
+<data noupdate="1">
+    <record model="api_manager.provider" id="provider_dotykacka_get_accesstoken">
+        <field name="name">Dotykacka Get accessToken</field>
+        <field name="internal_reference">DK</field>
+        <field name="server_domain">api.dotykacka.cz</field>
+        <field name="server_scheme">https</field>
+        <field name="authentication_method">api_token</field>
+        <field name="digest_alg">md5</field>
+        <field name="token_method">header</field>
+        <field name="key">Authorization</field>
+        <field name="value">User changeme</field>
+    </record>
+    <record model="api_manager.provider" id="provider_dotykacka">
+        <field name="name">Dotykacka</field>
+        <field name="internal_reference">DK</field>
+        <field name="server_domain">api.dotykacka.cz</field>
+        <field name="server_scheme">https</field>
+        <field name="authentication_method">bearer_token</field>
+        <field name="digest_alg">md5</field>
+        <field name="token_method">header</field>
+        <field name="token">PLACEHOLDER</field>
+        <field name="dynamic_token">1</field>
+    </record>
+</data>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_api_manager_provider_tree">
+            <field name="name">api_manager.provider.tree</field>
+            <field name="model">api_manager.provider</field>
+            <field name="arch" type="xml">
+                <list create="true">
+                    <field name="name"/>
+                    <field name="authentication_method"/>
+                    <field name="server_url"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_api_manager_provider_form">
+            <field name="name">api_manager.provider.form</field>
+            <field name="model">api_manager.provider</field>
+            <field name="arch" type="xml">
+                <form string="Provider">
+                    <sheet>
+                        <group string="Provider" name="provider">
+                            <field name="name"/>
+                            <field name="internal_reference"/>
+                            <field name="rel_companies" widget="many2many_tags"/>
+                        </group>
+                        <notebook>
+                            <page string="Server" name="server">
+                                <group string="Server URL" name="server_url">
+                                    <field name="server_domain"/>
+                                    <field name="server_scheme"/>
+                                    <field name="server_url"/>
+                                </group>
+                            </page>
+                            <page string="Authentication" name="authentication">
+                                <group>
+                                    <group name="method" string="Method">
+                                        <field string="Method" name="authentication_method" required="1"/>
+                                    </group>
+                                    <group name="credentials" string="Credentials">
+                                        <field name="username"
+                                               required="authentication_method in ['basic', 'digest']"
+                                               invisible="authentication_method not in ['basic', 'digest']"
+                                               style="width:100%%"/>
+                                        <field name="password" password="True"
+                                               required="authentication_method in ['basic', 'digest']"
+                                               invisible="authentication_method not in ['basic', 'digest']"
+                                               style="width:100%%"/>
+                                        <field name="digest_alg"
+                                               required="authentication_method == 'digest'"
+                                               invisible="authentication_method != 'digest'"
+                                               style="width:100%%"/>
+                                        <field name="key"
+                                               required="authentication_method == 'api_token'"
+                                               invisible="authentication_method != 'api_token'"
+                                               style="width:100%%"/>
+                                        <field name="value"
+                                               required="authentication_method == 'api_token'"
+                                               invisible="authentication_method != 'api_token'"
+                                               style="width:100%%"/>
+                                        <field name="token_method"
+                                               required="authentication_method == 'api_token'"
+                                               invisible="authentication_method != 'api_token'"
+                                               style="width:100%%"/>
+                                        <field name="token"
+                                               required="authentication_method == 'bearer_token' and not dynamic_token"
+                                               invisible="authentication_method != 'bearer_token'"
+                                               style="width:100%%"/>
+                                        <field name="dynamic_token"
+                                               invisible="authentication_method != 'bearer_token'"
+                                               style="width:100%%"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_api_manager_provider_search">
+            <field name="name">api_manager.provider.search</field>
+            <field name="model">api_manager.provider</field>
+            <field name="arch" type="xml">
+                <search string="API Providers">
+                    <field name="name"/>
+                    <field name="authentication_method"/>
+                    <group expand="0" string="Group By...">
+                        <filter
+                                name="group_by_name"
+                                string="Name"
+                                domain="[]"
+                                context="{'group_by':'name'}"
+                        />
+                        <filter
+                                name="group_by_authentication_method"
+                                string="Authentication"
+                                domain="[]"
+                                context="{'group_by':'authentication_method'}"
+                        />
+                    </group>
+                </search>
+            </field>
+        </record>
+    </data>
+</odoo>

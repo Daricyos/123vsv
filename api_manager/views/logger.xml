@@ -1,0 +1,29 @@
+<data>
+    <record model="ir.ui.view" id="view_api_manager_log_tree">
+        <field name="name">api_manager.logger.tree</field>
+        <field name="model">api_manager.logger</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="direction" string="Type"/>
+                <field name="origin"/>
+                <field name="created_at"/>
+            </list>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="view_api_manager_log_form">
+        <field name="name">api_manager.logger.form</field>
+        <field name="model">api_manager.logger</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" import="0" string="Log">
+                <sheet>
+                    <group>
+                        <field name="direction" string="Type"/>
+                        <field name="origin"/>
+                        <field name="created_at"/>
+                        <field name="data"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</data>

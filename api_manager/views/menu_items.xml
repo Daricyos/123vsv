@@ -1,0 +1,46 @@
+<data>
+    <!-- # LEVEL 0 # -->
+    <menuitem
+            name="API Manager"
+            id="menu_root_api_manager"
+            web_icon="api_manager,static/description/icon.png"
+            sequence="501"
+            groups="api_manager.group_api_admin"/>
+    <!-- # LEVEL 1 # -->
+    <menuitem
+            name="Providers"
+            id="menu_api_manager_providers"
+            parent="menu_root_api_manager"
+            action="api_manager_provider_action"
+            sequence="0"
+            groups="api_manager.group_api_admin"/>
+    <menuitem
+            name="Requests"
+            id="menu_api_manager_requests"
+            parent="menu_root_api_manager"
+            action="api_manager_request_action"
+            sequence="1"
+            groups="api_manager.group_api_admin"/>
+    <menuitem
+            name="Logs"
+            id="menu_api_manager_log"
+            parent="menu_root_api_manager"
+            action="api_manager_log_action"
+            sequence="10"
+            groups="api_manager.group_api_admin"/>
+    <!-- # LEVEL 2 # -->
+    <menuitem
+            name="Requests"
+            id="submenu_api_manager_requests"
+            parent="menu_api_manager_requests"
+            action="api_manager_request_action"
+            sequence="0"
+            groups="api_manager.group_api_admin"/>
+    <menuitem
+            name="Parameters"
+            id="submenu_api_manager_parameters"
+            parent="menu_api_manager_requests"
+            action="api_manager_request_parameter_action"
+            sequence="1"
+            groups="api_manager.group_api_admin"/>
+</data>
