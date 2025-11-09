@@ -4,3 +4,4 @@ from . import request
 from . import sale_order
 from . import res_partner
 from . import employees
+from . import cloud_config

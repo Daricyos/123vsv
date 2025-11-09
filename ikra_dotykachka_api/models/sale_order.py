@@ -16,6 +16,12 @@ class SaleOrder(models.Model):
         string='Unique order ID in Dotykačka',
         readonly=True
     )
+    dotykacka_cloud_id = fields.Char(
+        string='Dotykacka Cloud ID',
+        readonly=True,
+        index=True,
+        help='ID облака, из которого синхронизирован этот заказ'
+    )
     check_number_dotykacka = fields.Char(
         string='Check number',
         readonly=True
@@ -26,36 +32,47 @@ class SaleOrder(models.Model):
     )
 
     _sql_constraints = [
-        ('order_id_dotykacka_unique', 'UNIQUE(order_id_dotykacka)',
-         'Dotykačka Order ID must be unique!')
+        ('order_id_dotykacka_cloud_unique', 'UNIQUE(order_id_dotykacka, dotykacka_cloud_id)',
+         'Dotykačka Order ID must be unique per cloud!')
     ]
 
     @api.model
-    def sync_from_dotykachka(self, order_data):
+    def sync_from_dotykachka(self, order_data, cloud_id=None):
         try:
             order_id = str(order_data.get('orderid'))
             branch_id = str(order_data.get('branchid'))
 
+            if not cloud_id:
+                _logger.warning("No cloud_id provided, using legacy mode")
+                cloud_id = self.env['ir.config_parameter'].sudo().get_param('dotykacka.cloud_id')
+
             SO = self.env['sale.order'].with_user(SUPERUSER_ID)
-            existing_order = SO.search([('order_id_dotykacka', '=', order_id)], limit=1)
+
+            # Ищем заказ по order_id_dotykacka И cloud_id
+            domain = [('order_id_dotykacka', '=', order_id)]
+            if cloud_id:
+                domain.append(('dotykacka_cloud_id', '=', cloud_id))
+
+            existing_order = SO.search(domain, limit=1)
 
             if existing_order and existing_order.state in ['done', 'cancel']:
-                _logger.info(f"Order {order_id} already processed ({existing_order.state})")
+                _logger.info(f"Order {order_id} from cloud {cloud_id} already processed ({existing_order.state})")
                 return existing_order
 
-            order_items = self._fetch_order_items(order_id, branch_id)
+            order_items = self._fetch_order_items(order_id, branch_id, cloud_id)
 
             if not order_items:
-                _logger.warning(f"No items found for order {order_id}")
+                _logger.warning(f"No items found for order {order_id} from cloud {cloud_id}")
 
                 # Подготовка значений заказа
-            vals = self._prepare_order_vals(order_data, order_items or [])
+            vals = self._prepare_order_vals(order_data, order_items or [], cloud_id)
 
             if existing_order:
                 existing_order.sudo().write(vals)
                 order = existing_order
             else:
                 vals['order_id_dotykacka'] = order_id
+                vals['dotykacka_cloud_id'] = cloud_id
                 order = SO.sudo().create(vals)
 
             self._process_invoice_and_payment(order, order_data)
@@ -166,11 +183,24 @@ class SaleOrder(models.Model):
             _logger.error(f"Error registering payment: {str(e)}", exc_info=True)
 
     @api.model
-    def _fetch_order_items(self, order_id, branch_id):
+    def _fetch_order_items(self, order_id, branch_id, cloud_id=None):
         try:
             ICP = self.env['ir.config_parameter'].sudo()
-            api_token = ICP.get_param('dotykacka.api_token')
-            cloud_id = ICP.get_param('dotykacka.cloud_id', '388478152')
+
+            if not cloud_id:
+                cloud_id = ICP.get_param('dotykacka.cloud_id', '388478152')
+
+            # Получаем токен для конкретного облака
+            cloud_config = self.env['dotykacka.cloud.config'].sudo().search([
+                ('cloud_id', '=', cloud_id),
+                ('active', '=', True)
+            ], limit=1)
+
+            if cloud_config and cloud_config.api_token:
+                api_token = cloud_config.api_token
+            else:
+                # Fallback на старые настройки
+                api_token = ICP.get_param('dotykacka.api_token')
 
             if not api_token:
                 raise UserError("Dotykačka API token not configured")
@@ -205,7 +235,7 @@ class SaleOrder(models.Model):
 
 
     @api.model
-    def _prepare_order_vals(self, order_data, order_items):
+    def _prepare_order_vals(self, order_data, order_items, cloud_id=None):
         vals = {
             'point_of_sale_dotykacka': str(order_data.get('branchid', '')),
             'check_number_dotykacka': order_data.get('orderseriesid', ''),
@@ -239,7 +269,7 @@ class SaleOrder(models.Model):
         if order_data.get('note'):
             vals['note'] = order_data.get('note')
 
-        order_lines = self._prepare_order_lines(order_items)
+        order_lines = self._prepare_order_lines(order_items, cloud_id)
         if order_lines:
             vals['order_line'] = order_lines
 
@@ -296,7 +326,7 @@ class SaleOrder(models.Model):
     #     return order_lines
 
     @api.model
-    def _prepare_order_lines(self, order_items):
+    def _prepare_order_lines(self, order_items, cloud_id=None):
         """Создание строк заказа из элементов order-items API"""
         order_lines = []
         PT = self.env['product.template'].sudo()
@@ -313,12 +343,14 @@ class SaleOrder(models.Model):
                     _logger.warning(f"Item without _productId: {item}")
                     continue
 
-                _logger.info(f"Processing item: _productId={product_id}, name={product_name}")
+                _logger.info(f"Processing item: _productId={product_id}, name={product_name}, cloud_id={cloud_id}")
 
-                # 🔍 Поиск продукта по dotykachka_id
-                product_tmpl = PT.search([
-                    ('dotykachka_id', '=', product_id)
-                ], limit=1)
+                # 🔍 Поиск продукта по dotykachka_id И cloud_id
+                domain = [('dotykachka_id', '=', product_id)]
+                if cloud_id:
+                    domain.append(('dotykacka_cloud_id', '=', cloud_id))
+
+                product_tmpl = PT.search(domain, limit=1)
 
                 if not product_tmpl:
                     _logger.error(f"❌ Product NOT FOUND in Odoo: dotykachka_id={product_id}, name={product_name}")

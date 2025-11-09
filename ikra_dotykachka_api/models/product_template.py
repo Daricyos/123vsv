@@ -13,6 +13,12 @@ class ProductTemplate(models.Model):
         index = True,
         copy = False
     )
+    dotykachka_cloud_id = fields.Char(
+        string='Dotykachka Cloud ID',
+        readonly=True,
+        index=True,
+        help='ID облака, из которого синхронизирован этот продукт'
+    )
     dotykachka_category_id = fields.Char(string='Dotykachka Category ID')
     dotykachka_ean = fields.Char(string='EAN')
     dotykachka_plu = fields.Char(string='PLU')
@@ -23,36 +29,46 @@ class ProductTemplate(models.Model):
     dotykachka_last_sync = fields.Datetime(string='Last Sync', readonly=True)
 
     _sql_constraints = [
-        ('dotykachka_id_unique', 'UNIQUE(dotykachka_id)',
-         'Dotykachka ID must be unique!')
+        ('dotykachka_id_cloud_unique', 'UNIQUE(dotykachka_id, dotykachka_cloud_id)',
+         'Dotykachka ID must be unique per cloud!')
     ]
 
     @api.model
-    def sync_from_dotykachka(self, product_data):
+    def sync_from_dotykachka(self, product_data, cloud_id=None):
         try:
             dotykachka_id = str(product_data.get('productid'))
             if not dotykachka_id:
                 _logger.error("Missing productid in webhook data")
                 return False
 
+            if not cloud_id:
+                _logger.warning("No cloud_id provided, using legacy mode")
+                cloud_id = self.env['ir.config_parameter'].sudo().get_param('dotykacka.cloud_id')
+
             PT = self.env['product.template'].with_user(SUPERUSER_ID)
 
-            product = PT.search([('dotykachka_id', '=', dotykachka_id)], limit=1)
-            vals = self._prepare_product_vals(product_data)
+            # Ищем продукт по dotykachka_id И cloud_id
+            domain = [('dotykachka_id', '=', dotykachka_id)]
+            if cloud_id:
+                domain.append(('dotykachka_cloud_id', '=', cloud_id))
+
+            product = PT.search(domain, limit=1)
+            vals = self._prepare_product_vals(product_data, cloud_id)
 
             if product_data.get('deleted') == 1:
                 if product:
                     product.sudo().write({'active': False})
-                    _logger.info(f"Product {dotykachka_id} archived")
+                    _logger.info(f"Product {dotykachka_id} from cloud {cloud_id} archived")
                 return product
 
             if product:
                 product.sudo().write(vals)
-                _logger.info(f"Product {dotykachka_id} updated")
+                _logger.info(f"Product {dotykachka_id} from cloud {cloud_id} updated")
             else:
                 vals['dotykachka_id'] = dotykachka_id
+                vals['dotykachka_cloud_id'] = cloud_id
                 product = PT.sudo().create(vals)
-                _logger.info(f"Product {dotykachka_id} created")
+                _logger.info(f"Product {dotykachka_id} from cloud {cloud_id} created")
 
             return product
 
@@ -61,7 +77,7 @@ class ProductTemplate(models.Model):
             return False
 
     @api.model
-    def _prepare_product_vals(self, data):
+    def _prepare_product_vals(self, data, cloud_id=None):
         vals = {
             'name': data.get('name', 'Unknown Product'),
             'list_price': float(data.get('pricewithvat', 0)),

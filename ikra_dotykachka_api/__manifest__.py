@@ -21,6 +21,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         #Views
+        'views/cloud_config_views.xml',
         'views/product_priduct_view.xml',
         'views/product_priduct_view.xml',
         'views/res_partner_views.xml',

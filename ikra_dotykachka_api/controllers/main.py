@@ -9,8 +9,9 @@ _logger = logging.getLogger(__name__)
 
 
 class DotyWebhook(http.Controller):
-    @http.route('/doty/product/webhook', type='http', auth='public', csrf=False, methods=['POST'])
-    def webhook_receive(self, **post):
+    @http.route(['/doty/product/webhook', '/doty/product/webhook/<string:cloud_id>'],
+                type='http', auth='public', csrf=False, methods=['POST'])
+    def webhook_receive(self, cloud_id=None, **post):
         try:
             try:
                 data = json.loads(request.httprequest.data)
@@ -20,6 +21,11 @@ class DotyWebhook(http.Controller):
             if not data:
                 _logger.warning("Empty webhook data received")
                 return self._response({'status': 'error', 'message': 'No data'}, 400)
+
+            # Если cloud_id не передан в URL, пытаемся получить из старых настроек
+            if not cloud_id:
+                cloud_id = request.env['ir.config_parameter'].sudo().get_param('dotykacka.cloud_id')
+                _logger.warning("No cloud_id in URL, using legacy config")
 
             if not isinstance(data, list):
                 data = [data]
@@ -35,7 +41,7 @@ class DotyWebhook(http.Controller):
 
             for product_data in data:
                 try:
-                    product = ProductTemplate.sync_from_dotykachka(product_data)
+                    product = ProductTemplate.sync_from_dotykachka(product_data, cloud_id=cloud_id)
 
                     if not product:
                         results['errors'] += 1
@@ -64,13 +70,19 @@ class DotyWebhook(http.Controller):
                 'message': str(e)
             }, 500)
 
-    @http.route('/doty/order/webhook', type='http', auth='public', csrf=False, methods=['POST'])
-    def webhook_order(self, **post):
+    @http.route(['/doty/order/webhook', '/doty/order/webhook/<string:cloud_id>'],
+                type='http', auth='public', csrf=False, methods=['POST'])
+    def webhook_order(self, cloud_id=None, **post):
         try:
             try:
                 data = json.loads(request.httprequest.data)
             except json.JSONDecodeError:
                 data = post
+
+            # Если cloud_id не передан в URL, пытаемся получить из старых настроек
+            if not cloud_id:
+                cloud_id = request.env['ir.config_parameter'].sudo().get_param('dotykacka.cloud_id')
+                _logger.warning("No cloud_id in URL, using legacy config")
 
             if not isinstance(data, list):
                 data = [data]
@@ -98,7 +110,7 @@ class DotyWebhook(http.Controller):
                         })
                         continue
 
-                    order = SaleOrder.sync_from_dotykachka(order_data)
+                    order = SaleOrder.sync_from_dotykachka(order_data, cloud_id=cloud_id)
 
                     if not order:
                         results['errors'] += 1
